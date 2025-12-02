@@ -21,8 +21,8 @@ async function bootstrap() {
 
   //Swagger
   const config = new DocumentBuilder()
-    .setTitle('Swokosky Airlines API')
-    .setDescription('Documentación de la API de Swokosky Airlines')
+    .setTitle('BACKEND DASHBOARD API')
+    .setDescription('Documentación de la API del backend')
     .setVersion('1.0')
     // => aquí definimos el esquema Bearer (JWT)
     .addBearerAuth(
