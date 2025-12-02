@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './schemas/product.schema';
@@ -30,14 +30,53 @@ export class ProductsService {
     return createdProduct.save();
   }
 
-  async findAll(): Promise<Product[]> {
-    // Scatter-Gather: Buscamos en ambos y unimos
-    const [products1, products2] = await Promise.all([
+async findAll(): Promise<Product[]> {
+    const [p1, p2] = await Promise.all([
       this.productModel1.find().exec(),
       this.productModel2.find().exec(),
     ]);
-    return [...products1, ...products2];
+    // Ordenamos por fecha de creación o nombre para que el frontend no vea saltos
+    return [...p1, ...p2].sort((a: any, b: any) => b.createdAt - a.createdAt);
+  }
+
+  async findOne(id: string): Promise<Product> {
+    // Buscamos en paralelo en ambos shards
+    const [res1, res2] = await Promise.all([
+      this.productModel1.findById(id).exec(),
+      this.productModel2.findById(id).exec(),
+    ]);
+
+    const product = res1 || res2;
+    if (!product) throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    return product;
+  }
+
+  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+    // NOTA: No permitimos cambiar la categoría aquí para evitar mover datos entre shards (complejidad extra)
+    if (updateProductDto.category) {
+       delete updateProductDto.category; 
+    }
+
+    // Intentamos actualizar en ambos. Si no existe devuelve null, si existe devuelve el doc nuevo
+    const [res1, res2] = await Promise.all([
+      this.productModel1.findByIdAndUpdate(id, updateProductDto, { new: true }).exec(),
+      this.productModel2.findByIdAndUpdate(id, updateProductDto, { new: true }).exec(),
+    ]);
+
+    const updated = res1 || res2;
+    if (!updated) throw new NotFoundException(`No se pudo actualizar. ID ${id} no encontrado`);
+    return updated;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    // Intentamos borrar en ambos
+    const [res1, res2] = await Promise.all([
+      this.productModel1.findByIdAndDelete(id).exec(),
+      this.productModel2.findByIdAndDelete(id).exec(),
+    ]);
+
+    if (!res1 && !res2) throw new NotFoundException(`Producto ${id} no encontrado para eliminar`);
+    return { message: 'Producto eliminado correctamente' };
   }
 }
-
   

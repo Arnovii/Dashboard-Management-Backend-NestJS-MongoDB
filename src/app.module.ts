@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductsModule } from './features/products/products.module';
+import { StatsModule } from './features/stats/stats.module';
+import { MarketingModule } from './features/marketing/marketing.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ProductsModule } from './features/products/products.module';
       connectionName: 'SHARD_2',
     }),
     ProductsModule,
+    StatsModule,
+    MarketingModule
   ],
   controllers: [AppController],
   providers: [AppService],
