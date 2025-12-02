@@ -11,6 +11,9 @@ export class Product extends Document {
 
   @Prop({ required: true }) // Vital para nuestra fragmentación
   category: string; 
+  
+  @Prop()
+  image: string; 
 
   @Prop({ required: true })
   quantity: number;

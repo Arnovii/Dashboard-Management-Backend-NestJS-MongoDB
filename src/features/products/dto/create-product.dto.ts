@@ -26,6 +26,14 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   category: string;
+  
+  @ApiProperty({
+    description: 'URL imagen del producto',
+    example: 'https://res.cloudinary.com/dycqxw0aj/image/upload/v1764661928/Placeholder_view_fhh7gt.png',
+  })
+  @IsString()
+  @IsNotEmpty()
+  image: string;
 
   @ApiProperty({
     description: 'Precio del producto',
